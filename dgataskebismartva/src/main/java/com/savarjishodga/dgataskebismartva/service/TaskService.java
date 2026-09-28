@@ -81,6 +81,30 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
+    public List<TaskResponseDTO> filterTasks(TaskStatusEnum status, String assignee, String title) {
+        String assigneeParam = (assignee != null && !assignee.isBlank()) ? "%" + assignee.trim() + "%" : null;
+        String titleParam = (title != null && !title.isBlank()) ? "%" + title.trim() + "%" : null;
+
+        return taskRepository.filterTasks(status, assigneeParam, titleParam)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    @Transactional
+    public TaskResponseDTO updateTaskStatus(Long id, TaskStatusEnum statusEnum) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Task with this id not found: " + id));
+
+        TaskStatus status = taskStatusRepository.findByCode(statusEnum)
+                .orElseThrow(() -> new ResourceNotFoundException("Status not found: " + statusEnum));
+
+        task.setStatus(status);
+        Task updatedTask = taskRepository.save(task);
+        return mapToResponse(updatedTask);
+    }
+
+    @Transactional(readOnly = true)
     public TaskResponseDTO getTaskById(Long id) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task with this id not found: " + id));

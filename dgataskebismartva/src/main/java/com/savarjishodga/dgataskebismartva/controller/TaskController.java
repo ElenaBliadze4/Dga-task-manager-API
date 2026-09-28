@@ -27,7 +27,7 @@ public class TaskController {
         return ResponseEntity.status(HttpStatus.CREATED).body(taskService.createTask(taskRequestDTO));
     }
 
-    @GetMapping
+    @GetMapping("/all")
     @Operation(summary = "Get all tasks (shegvidzlia avirchiot statusis mixedvit)")
     public ResponseEntity<List<TaskResponseDTO>> getAllTasks(@RequestParam(required = false) TaskStatusEnum status) {
         return ResponseEntity.ok(taskService.getAllTasks(status));
@@ -50,6 +50,23 @@ public class TaskController {
     public ResponseEntity<String> deleteTask(@PathVariable Long id) {
         taskService.deleteTask(id);
         return ResponseEntity.ok("Task successfully deleted!");
+    }
+
+    @GetMapping
+    @Operation(summary = "Filter tasks by status, assignee name, or title substring")
+    public ResponseEntity<List<TaskResponseDTO>> getTasks(
+            @RequestParam(required = false) TaskStatusEnum status,
+            @RequestParam(required = false) String assignee,
+            @RequestParam(required = false) String title) {
+        return ResponseEntity.ok(taskService.filterTasks(status, assignee, title));
+    }
+
+    @PatchMapping("/{id}/status")
+    @Operation(summary = "Update task status")
+    public ResponseEntity<TaskResponseDTO> updateTaskStatus(
+            @PathVariable Long id,
+            @RequestParam TaskStatusEnum status) {
+        return ResponseEntity.ok(taskService.updateTaskStatus(id, status));
     }
 
 }
